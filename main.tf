@@ -1,38 +1,38 @@
 terraform {
-    required_providers  {
-        aws = {
-            source = "hashicorp/aws"
-            version = "3.26.0"
-        }
-        random  = {
-            source = "hashicorp/random"
-            version = "3.0.1"
-        }
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "3.26.0"
     }
-        required_version = "~> 1.0"
-
-        backend "remote" {
-            organization = "acloudguru-terraform-wch"
-
-            workspaces {
-                name = "demo-github-actions"
-            }
-        
+    random = {
+      source  = "hashicorp/random"
+      version = "3.0.1"
     }
+  }
+  required_version = "~> 1.0"
+
+  backend "remote" {
+    organization = "acloudguru-terraform-wch"
+
+    workspaces {
+      name = "demo-github-actions"
+    }
+
+  }
 }
 
 provider "aws" {
-    region = "us-east-1"
+  region = "us-east-1"
 }
 
 resource "random_pet" "sg" {}
 
 resource "aws_instance" "web" {
-    ami = "ami-090fa75af13c156b4"
-    instance_type = "t2.micro"
-    vpc_security_group_ids = [aws_security_group.web-sg.id]
+  ami                    = "ami-090fa75af13c156b4"
+  instance_type          = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.web-sg.id]
 
-    user_data =  <<-EOF
+  user_data = <<-EOF
                 #!/bin/bash
                 echo 'hello workd' > index.html
                 nohup buxybox httpd -f -p 8080 &
@@ -40,18 +40,18 @@ resource "aws_instance" "web" {
 }
 
 resource "aws_security_group" "web-sg" {
-    name = "${random_pet.sg.id}-sg"
+  name = "${random_pet.sg.id}-sg"
 
-    ingress  {
-        from_port = 8080
-        to_port = 8080
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  
+
 }
 
 output "web-address" {
-    value = "${aws_instance.web.public_dns}:8080"
+  value = "${aws_instance.web.public_dns}:8080"
 }
